@@ -5,7 +5,7 @@ INGROUP=Serpentes
 OUTGROUP=Basiliscus
 #FOSSILS=fossils.tsv
 
-export WORKDIR=results/`date +%Y-%m-%d`
+export WORKDIR=$PWD/results/`date +%Y-%m-%d`
 
 if [ ! -d $WORKDIR ]; then
     mkdir $WORKDIR
@@ -16,24 +16,37 @@ fi
 cp $BASH_SOURCE $WORKDIR
 
 # Start the SUPERSMART pipeline
-smrt taxize -r $INGROUP,$OUTGROUP -b -e Species -w $WORKDIR
 
-smrt align -w $WORKDIR
+if [ ! -e 'species.tsv']; then
+    smrt taxize -r $INGROUP,$OUTGROUP -b -e Species -w $WORKDIR
+fi
 
-smrt orthologize -w $WORKDIR
+if [ ! -e 'aligned.txt']; then
+    smrt align -w $WORKDIR
+fi
+
+if [ ! -e 'merged.txt']; then
+    smrt orthologize -w $WORKDIR
+fi
 
 export SUPERSMART_BACKBONE_MAX_DISTANCE="0.1"
 export SUPERSMART_BACKBONE_MIN_COVERAGE="3"
 export SUPERSMART_BACKBONE_MAX_COVERAGE="5"
 
-smrt bbmerge -w $WORKDIR
+if [ ! -e 'supermatrix.phy']; then
+    smrt bbmerge -w $WORKDIR
+fi
 
 export SUPERSMART_EXABAYES_NUMGENS="100000"
 export SUPERSMART_EXABAYES_NUMRUNS="8"
 
-smrt bbinfer --inferencetool=exabayes -t species.tsv -o backbone.dnd -w $WORKDIR
+if [ ! -e 'backbone.dnd']; then
+    smrt bbinfer --inferencetool=exabayes -t species.tsv -o backbone.dnd -w $WORKDIR
+fi
 
-smrt bbreroot -g $OUTGROUP --smooth -w $WORKDIR
+if [ ! -e 'backbone-rerooted.dnd']; then
+    smrt bbreroot -g $OUTGROUP --smooth -w $WORKDIR
+fi
 
 # exit since we do not have calibration data yet
 exit 0
