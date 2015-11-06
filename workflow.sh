@@ -17,15 +17,15 @@ cp $BASH_SOURCE $WORKDIR
 
 # Start the SUPERSMART pipeline
 
-if [ ! -e 'species.tsv']; then
+if [ ! -e "species.tsv" ]; then
     smrt taxize -r $INGROUP,$OUTGROUP -b -e Species -w $WORKDIR
 fi
 
-if [ ! -e 'aligned.txt']; then
+if [ ! -e "aligned.txt" ]; then
     smrt align -w $WORKDIR
 fi
 
-if [ ! -e 'merged.txt']; then
+if [ ! -e "merged.txt" ]; then
     smrt orthologize -w $WORKDIR
 fi
 
@@ -33,18 +33,18 @@ export SUPERSMART_BACKBONE_MAX_DISTANCE="0.1"
 export SUPERSMART_BACKBONE_MIN_COVERAGE="3"
 export SUPERSMART_BACKBONE_MAX_COVERAGE="5"
 
-if [ ! -e 'supermatrix.phy']; then
+if [ ! -e "supermatrix.phy" ]; then
     smrt bbmerge -w $WORKDIR
 fi
 
 export SUPERSMART_EXABAYES_NUMGENS="100000"
 export SUPERSMART_EXABAYES_NUMRUNS="8"
 
-if [ ! -e 'backbone.dnd']; then
+if [ ! -e "backbone.dnd" ]; then
     smrt bbinfer --inferencetool=exabayes -t species.tsv -o backbone.dnd -w $WORKDIR
 fi
 
-if [ ! -e 'backbone-rerooted.dnd']; then
+if [ ! -e "backbone-rerooted.dnd" ]; then
     smrt bbreroot -g $OUTGROUP --smooth -w $WORKDIR
 fi
 
