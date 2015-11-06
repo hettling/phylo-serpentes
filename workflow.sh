@@ -5,39 +5,50 @@ INGROUP=Serpentes
 OUTGROUP=Basiliscus
 #FOSSILS=fossils.tsv
 
-smrt taxize -r $INGROUP,$OUTGROUP -b -e Species
+export WORKDIR=results/`date +%Y-%m-%d`
 
-smrt align
+if [ ! -d $WORKDIR ]; then
+    mkdir $WORKDIR
+fi
 
-smrt orthologize
+# copy this script in the working directory so 
+# parameter settings are stored
+cp $BASH_SOURCE $WORKDIR
+
+# Start the SUPERSMART pipeline
+smrt taxize -r $INGROUP,$OUTGROUP -b -e Species -w $WORKDIR
+
+smrt align -w $WORKDIR
+
+smrt orthologize -w $WORKDIR
 
 export SUPERSMART_BACKBONE_MAX_DISTANCE="0.1"
 export SUPERSMART_BACKBONE_MIN_COVERAGE="3"
 export SUPERSMART_BACKBONE_MAX_COVERAGE="5"
 
-smrt bbmerge
+smrt bbmerge -w $WORKDIR
 
 export SUPERSMART_EXABAYES_NUMGENS="100000"
 export SUPERSMART_EXABAYES_NUMRUNS="8"
 
-smrt bbinfer --inferencetool=exabayes -t species.tsv -o backbone-exabayes.dnd
+smrt bbinfer --inferencetool=exabayes -t species.tsv -o backbone.dnd -w $WORKDIR
 
-smrt bbreroot -g $OUTGROUP --smooth 
+smrt bbreroot -g $OUTGROUP --smooth -w $WORKDIR
 
 # exit since we do not have calibration data yet
 exit 0
 
-#smrt bbcalibrate -f $FOSSILS
+#smrt bbcalibrate -f $FOSSILS -w $WORKDIR
 
-#smrt consense -b 0.2 --prob
+#smrt consense -b 0.2 --prob -w $WORKDIR
 
 export SUPERSMART_CLADE_MAX_DISTANCE="0.2"
 export SUPERSMART_CLADE_MIN_DENSITY="0.5"
 
-#smrt bbdecompose
+#smrt bbdecompose -w $WORKDIR
 
-#smrt clademerge --enrich
+#smrt clademerge --enrich -w $WORKDIR
 
-#smrt cladeinfer --ngens=15_000_000 --sfreq=1000 --lfreq=1000
+#smrt cladeinfer --ngens=15_000_000 --sfreq=1000 --lfreq=1000 -w $WORKDIR
 
-#smrt cladegraft
+#smrt cladegraft -w $WORKDIR
